@@ -16,9 +16,6 @@ import 'package:news_admin/widgets/article_preview.dart';
 import 'package:provider/provider.dart';
 import '../utils/styles.dart';
 
-
-
-
 class Articles extends StatefulWidget {
   Articles({Key? key}) : super(key: key);
 
@@ -27,8 +24,6 @@ class Articles extends StatefulWidget {
 }
 
 class _ArticlesState extends State<Articles> {
-
-  
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   ScrollController? controller;
   DocumentSnapshot? _lastVisible;
@@ -43,8 +38,6 @@ class _ArticlesState extends State<Articles> {
   String? _sortByText;
   bool? _hasData;
 
-
-
   @override
   void initState() {
     controller = new ScrollController()..addListener(_scrollListener);
@@ -54,48 +47,44 @@ class _ArticlesState extends State<Articles> {
     _sortByText = 'Newest First';
     _orderBy = 'timestamp';
     _descending = true;
-    if(this.mounted){
+    if (this.mounted) {
       _getData();
-
     }
   }
-
-
-
 
   Future<Null> _getData() async {
     QuerySnapshot data;
 
-    if(_sortBy == null){
+    if (_sortBy == null) {
       if (_lastVisible == null)
-      data = await firestore
-          .collection(collectionName)
-          .orderBy(_orderBy, descending: _descending)
-          .limit(10)
-          .get();
-    else
-      data = await firestore
-          .collection(collectionName)
-          .orderBy(_orderBy, descending: _descending)
-          .startAfter([_lastVisible![_orderBy]])
-          .limit(10)
-          .get();
-    }else{
+        data = await firestore
+            .collection(collectionName)
+            .orderBy(_orderBy, descending: _descending)
+            .limit(10)
+            .get();
+      else
+        data = await firestore
+            .collection(collectionName)
+            .orderBy(_orderBy, descending: _descending)
+            .startAfter([_lastVisible![_orderBy]])
+            .limit(10)
+            .get();
+    } else {
       if (_lastVisible == null)
-      data = await firestore
-          .collection(collectionName)
-          .where('content type', isEqualTo: _sortBy)
-          .orderBy(_orderBy, descending: _descending)
-          .limit(10)
-          .get();
-    else
-      data = await firestore
-          .collection(collectionName)
-          .where('content type', isEqualTo: _sortBy)
-          .orderBy(_orderBy, descending: _descending)
-          .startAfter([_lastVisible![_orderBy]])
-          .limit(10)
-          .get();
+        data = await firestore
+            .collection(collectionName)
+            .where('content type', isEqualTo: _sortBy)
+            .orderBy(_orderBy, descending: _descending)
+            .limit(10)
+            .get();
+      else
+        data = await firestore
+            .collection(collectionName)
+            .where('content type', isEqualTo: _sortBy)
+            .orderBy(_orderBy, descending: _descending)
+            .startAfter([_lastVisible![_orderBy]])
+            .limit(10)
+            .get();
     }
 
     if (data.docs.length > 0) {
@@ -109,31 +98,27 @@ class _ArticlesState extends State<Articles> {
         });
       }
     } else {
-      if(_lastVisible == null){
+      if (_lastVisible == null) {
         setState(() {
           _isLoading = false;
-          _hasData = false; 
+          _hasData = false;
         });
-      }else{
+      } else {
         setState(() {
           _isLoading = false;
           _hasData = true;
         });
         openToast(context, 'No more content available');
-        
       }
     }
     return null;
   }
-
 
   @override
   void dispose() {
     super.dispose();
     controller!.dispose();
   }
-
-
 
   void _scrollListener() {
     if (!_isLoading) {
@@ -148,26 +133,21 @@ class _ArticlesState extends State<Articles> {
     nextScreen(context, CommentsPage(timestamp: timestamp));
   }
 
-
-
   handlePreview(Article d) async {
     await showArticlePreview(
-      context, 
-      d.title, 
-      d.description, 
-      d.thumbnailImagelUrl, 
-      d.loves, 
-      d.sourceUrl ?? '', 
-      d.date, 
-      d.category, 
-      d.contentType,
-      d.youtubeVideoUrl
-      );
+        context,
+        d.title,
+        d.description,
+        d.thumbnailImagelUrl,
+        d.loves,
+        d.sourceUrl ?? '',
+        d.date,
+        d.category,
+        d.contentType,
+        d.youtubeVideoUrl);
   }
 
-
-
-  reloadData (){
+  reloadData() {
     setState(() {
       _isLoading = true;
       _snap.clear();
@@ -176,8 +156,6 @@ class _ArticlesState extends State<Articles> {
     });
     _getData();
   }
-
-  
 
   Future handleDelete(timestamp) async {
     final AdminBloc ab = Provider.of<AdminBloc>(context, listen: false);
@@ -196,11 +174,13 @@ class _ArticlesState extends State<Articles> {
               SizedBox(
                 height: 10,
               ),
-              Text('Want to delete this item from the database?',
-                  style: TextStyle(
-                      color: Colors.grey[900],
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700)),
+              Text(
+                'Want to delete this item from the database?',
+                style: TextStyle(
+                    color: Colors.grey[900],
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700),
+              ),
               SizedBox(
                 height: 30,
               ),
@@ -219,21 +199,27 @@ class _ArticlesState extends State<Articles> {
                     onPressed: () async {
                       if (ab.userType == 'tester') {
                         Navigator.pop(context);
-                        openDialog(context, 'You are a Tester','Only admin can delete contents');
+                        openDialog(context, 'You are a Tester',
+                            'Only admin can delete contents');
                       } else {
-                        await ab.deleteContent(timestamp, 'contents')
-                        .then((value) => ab.removefromFeaturedList(context, timestamp))
-                        .then((value) => context.read<NotificationBloc>().removeFromNotificationList(context, timestamp))
-                        .then((bool? removed) async{
-                          if(removed == true && removed != null){
-                            await ab.decreaseCount('notifications_count');
-                          }})
-                        .then((value) => ab.decreaseCount('contents_count'))
-                        .then((value) => openToast(context, 'Item deleted successfully!'));
+                        await ab
+                            .deleteContent(timestamp, 'contents')
+                            .then((value) =>
+                                ab.removefromFeaturedList(context, timestamp))
+                            .then((value) => context
+                                .read<NotificationBloc>()
+                                .removeFromNotificationList(context, timestamp))
+                            .then((bool? removed) async {
+                              if (removed == true && removed != null) {
+                                await ab.decreaseCount('notifications_count');
+                              }
+                            })
+                            .then((value) => ab.decreaseCount('contents_count'))
+                            .then((value) => openToast(
+                                context, 'Item deleted successfully!'));
                         reloadData();
                         Navigator.pop(context);
                       }
-                      
                     },
                   ),
                   SizedBox(width: 10),
@@ -255,9 +241,7 @@ class _ArticlesState extends State<Articles> {
         });
   }
 
-
-
-  openFeaturedDialog (String? timestamp) {
+  openFeaturedDialog(String? timestamp) {
     final AdminBloc ab = Provider.of<AdminBloc>(context, listen: false);
     showDialog(
         context: context,
@@ -297,19 +281,31 @@ class _ArticlesState extends State<Articles> {
                     onPressed: () async {
                       if (ab.userType == 'tester') {
                         Navigator.pop(context);
-                        openDialog(context, 'You are a Tester', 'Only admin can do this');
+                        openDialog(context, 'You are a Tester',
+                            'Only admin can do this');
                       } else {
-
-                        await context.read<AdminBloc>().getTotalDocuments('featured_count').then((itemCount)async{
-                          if(itemCount <= 10){
-                            await context.read<AdminBloc>().addToFeaturedList(context, timestamp)
-                            .then((value) => context.read<AdminBloc>().increaseCount('featured_count'));
+                        await context
+                            .read<AdminBloc>()
+                            .getTotalDocuments('featured_count')
+                            .then((itemCount) async {
+                          if (itemCount <= 10) {
+                            await context
+                                .read<AdminBloc>()
+                                .addToFeaturedList(context, timestamp)
+                                .then((value) => context
+                                    .read<AdminBloc>()
+                                    .increaseCount('featured_count'));
                             Navigator.pop(context);
-                            openDialog(context, 'Feature Item Added Successsfully!', 'This item has been added in the featured list suceessfully.');
-                          }
-                          else{
+                            openDialog(
+                                context,
+                                'Feature Item Added Successsfully!',
+                                'This item has been added in the featured list suceessfully.');
+                          } else {
                             Navigator.pop(context);
-                            openDialog(context, 'Fetured items are greater than 10 contents!', 'The limit of featured item is 10. Please remove some items from featured contents and try again');
+                            openDialog(
+                                context,
+                                'Fetured items are greater than 10 contents!',
+                                'The limit of featured item is 10. Please remove some items from featured contents and try again');
                           }
                         });
                       }
@@ -318,7 +314,6 @@ class _ArticlesState extends State<Articles> {
                   SizedBox(width: 10),
                   TextButton(
                     style: buttonStyle(Colors.redAccent),
-                    
                     child: Text(
                       'No',
                       style: TextStyle(
@@ -334,9 +329,6 @@ class _ArticlesState extends State<Articles> {
           );
         });
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -364,42 +356,39 @@ class _ArticlesState extends State<Articles> {
               color: Colors.indigoAccent,
               borderRadius: BorderRadius.circular(15)),
         ),
-        
         Expanded(
-          child: _hasData == false 
-          ? emptyPage(Icons.content_paste, 'No data available.\nUpload articles first!')
-          
-          : RefreshIndicator(
-            child: ListView.builder(
-              padding: EdgeInsets.only(top: 30, bottom: 20),
-              controller: controller,
-              physics: AlwaysScrollableScrollPhysics(),
-              itemCount: _data.length + 1,
-              itemBuilder: (_, int index) {
-                if (index < _data.length) {
-                  return dataList(_data[index]);
-                }
-                return Center(
-                  child: new Opacity(
-                    opacity: _isLoading ? 1.0 : 0.0,
-                    child: new SizedBox(
-                        width: 32.0,
-                        height: 32.0,
-                        child: new CircularProgressIndicator()),
+          child: _hasData == false
+              ? emptyPage(Icons.content_paste,
+                  'No data available.\nUpload articles first!')
+              : RefreshIndicator(
+                  child: ListView.builder(
+                    padding: EdgeInsets.only(top: 30, bottom: 20),
+                    controller: controller,
+                    physics: AlwaysScrollableScrollPhysics(),
+                    itemCount: _data.length + 1,
+                    itemBuilder: (_, int index) {
+                      if (index < _data.length) {
+                        return dataList(_data[index]);
+                      }
+                      return Center(
+                        child: new Opacity(
+                          opacity: _isLoading ? 1.0 : 0.0,
+                          child: new SizedBox(
+                              width: 32.0,
+                              height: 32.0,
+                              child: new CircularProgressIndicator()),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
-            onRefresh: () async {
-              reloadData();
-            },
-          ),
+                  onRefresh: () async {
+                    reloadData();
+                  },
+                ),
         ),
       ],
     );
   }
-
-
 
   Widget dataList(Article d) {
     return Container(
@@ -418,17 +407,24 @@ class _ArticlesState extends State<Articles> {
                 height: 120,
                 width: 120,
                 decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                  child: CustomCacheImage(imageUrl: d.thumbnailImagelUrl, radius: 10,),
+                child: CustomCacheImage(
+                  imageUrl: d.thumbnailImagelUrl,
+                  radius: 10,
+                ),
               ),
-
-              d.contentType == 'image' ? Container()
-              : Align(
-                alignment: Alignment.center,
-                child: Icon(LineIcons.playCircle, size: 70, color: Colors.white,),
-              )
+              d.contentType == 'image'
+                  ? Container()
+                  : Align(
+                      alignment: Alignment.center,
+                      child: Icon(
+                        LineIcons.playCircle,
+                        size: 70,
+                        color: Colors.white,
+                      ),
+                    )
             ],
           ),
           Flexible(
@@ -458,15 +454,14 @@ class _ArticlesState extends State<Articles> {
                           color: Colors.deepPurpleAccent,
                           borderRadius: BorderRadius.circular(3),
                         ),
-                        child: Text(d.category!, style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12
-                        ),),
+                        child: Text(
+                          d.category!,
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ),
                       ),
                       SizedBox(width: 10),
                       Icon(Icons.access_time, size: 15, color: Colors.grey),
                       SizedBox(width: 3),
-
                       Text(
                         d.date!,
                         style: TextStyle(fontSize: 12),
@@ -492,7 +487,9 @@ class _ArticlesState extends State<Articles> {
                               size: 16,
                               color: Colors.grey,
                             ),
-                            SizedBox(width: 2,),
+                            SizedBox(
+                              width: 2,
+                            ),
                             Text(
                               d.views.toString(),
                               style:
@@ -587,10 +584,7 @@ class _ArticlesState extends State<Articles> {
                           handleDelete(d.timestamp);
                         },
                       ),
-
-
                       SizedBox(width: 10),
-
                       Container(
                         height: 35,
                         padding: EdgeInsets.only(left: 8, right: 8),
@@ -603,8 +597,6 @@ class _ArticlesState extends State<Articles> {
                             icon: Icon(LineIcons.plus),
                             label: Text('Add to Featured')),
                       ),
-
-                      
                     ],
                   ),
                 ],
@@ -616,26 +608,33 @@ class _ArticlesState extends State<Articles> {
     );
   }
 
-
-
-  Widget sortingPopup (){
+  Widget sortingPopup() {
     return PopupMenuButton(
       child: Container(
-              height: 40,
-              padding: EdgeInsets.only(left: 20, right: 20),
-              decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(30)),
-              child : Row(children: [
-                Icon(CupertinoIcons.sort_down, color: Colors.grey[800],),
-                SizedBox(width: 10,),
-              Text('Sort By - $_sortByText', style: TextStyle(
-                color: Colors.grey[900],
-                fontWeight: FontWeight.w500
-              ),)
-              ],),),
-      itemBuilder: (BuildContext context){
+        height: 40,
+        padding: EdgeInsets.only(left: 20, right: 20),
+        decoration: BoxDecoration(
+            color: Colors.grey[100],
+            border: Border.all(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(30)),
+        child: Row(
+          children: [
+            Icon(
+              CupertinoIcons.sort_down,
+              color: Colors.grey[800],
+            ),
+            SizedBox(
+              width: 10,
+            ),
+            Text(
+              'Sort By - $_sortByText',
+              style: TextStyle(
+                  color: Colors.grey[900], fontWeight: FontWeight.w500),
+            )
+          ],
+        ),
+      ),
+      itemBuilder: (BuildContext context) {
         return <PopupMenuItem>[
           PopupMenuItem(
             child: Text('Newest First'),
@@ -663,43 +662,43 @@ class _ArticlesState extends State<Articles> {
           )
         ];
       },
-      onSelected: (dynamic value){
-        if(value == 'new'){
+      onSelected: (dynamic value) {
+        if (value == 'new') {
           setState(() {
             _sortBy = null;
             _sortByText = 'Newest First';
             _orderBy = 'timestamp';
             _descending = true;
           });
-        }else if(value == 'old'){
+        } else if (value == 'old') {
           setState(() {
             _sortBy = null;
             _sortByText = 'Oldest First';
             _orderBy = 'timestamp';
             _descending = false;
           });
-        }else if(value == 'popular'){
+        } else if (value == 'popular') {
           setState(() {
             _sortBy = null;
             _sortByText = 'Most Popular';
             _orderBy = 'loves';
             _descending = true;
           });
-        }else if(value == 'views'){
+        } else if (value == 'views') {
           setState(() {
             _sortBy = null;
             _sortByText = 'Most Viewed';
             _orderBy = 'views';
             _descending = true;
           });
-        }else if(value == 'image'){
+        } else if (value == 'image') {
           setState(() {
             _sortBy = 'image';
             _sortByText = 'Image Article';
             _orderBy = 'timestamp';
             _descending = true;
           });
-        }else if(value == 'video'){
+        } else if (value == 'video') {
           setState(() {
             _sortBy = 'video';
             _sortByText = 'Video Article';
@@ -711,6 +710,4 @@ class _ArticlesState extends State<Articles> {
       },
     );
   }
-
-
 }
